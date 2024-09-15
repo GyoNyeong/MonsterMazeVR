@@ -9,8 +9,8 @@
 USTRUCT()
 struct FMazeGridRow
 {
-	GENERATED_USTRUCT_BODY();
-
+	GENERATED_BODY()
+	
 	UPROPERTY()
 	TArray<AActor*> Columns;
 
@@ -29,7 +29,7 @@ struct FMazeGridRow
 USTRUCT()
 struct FMazeGrid
 {
-	GENERATED_USTRUCT_BODY();
+	GENERATED_BODY()
 
 	UPROPERTY()
 	TArray<FMazeGridRow> Rows;
@@ -73,7 +73,7 @@ struct FMazeGrid
 			{
 				if (Rows[r].Columns[c] && Rows[r].Columns[c]->IsValidLowLevel())
 				{
-
+					Rows[r].Columns[c]->Destroy();
 				}
 			}
 		}
@@ -116,10 +116,13 @@ public:
 	void GenerateMaze(int TileX, int TileY);
 
 	UPROPERTY()
-	FMazeGride MazeGrid;
+	FMazeGrid MazeGrid;
 
 	// Sets default values for this actor's properties
 	AMazeGenerator();
+
+	// Actor or Component의 속성이 변경될 때 자동으로 호출되는 함수.
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& e) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -129,4 +132,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+private:
+	AActor* SpawnedPlayerStart;
+	AActor* SpawnedExitPortal;
+
+	void ReplaceBlock(UClass* NewBlock, int MazeX, int MAzeY);
+	AActor* SpawnBlock(UClass* BlockType, FVector Locatiom, FRotator Rotation = FRotator(0, 0, 0));
 };
