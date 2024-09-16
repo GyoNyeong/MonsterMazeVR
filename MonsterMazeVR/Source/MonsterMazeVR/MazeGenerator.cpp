@@ -56,10 +56,42 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 		return;
 	}
 
-	// 
+	// 벽 Wall 과 바닥 Ground 이 설정되지 않았을 때 함수 종료
 	if (Ground == nullptr || Wall == nullptr)
 	{
 		return;
+	}
+
+	// 변수 초기화
+	float CaptureX = 0.0f;
+	float CpatureY = 0.0f;
+	const float Offset = 350.0f;
+
+	// 기존 PlayerStart 와 ExitPortal 제거
+	if (SpawnedPlayerStart != nullptr)
+	{
+		SpawnedPlayerStart->Destroy();
+	}
+	if (SpawnedExitPortal != nullptr)
+	{
+		SpawnedExitPortal->Destroy();
+	}
+
+	// 미로 초기화
+	MazeGrid.Clear();
+	MazeGrid.AddUninitialized(TileX, TileY);
+
+	// 미로의 기본 구조 생성
+	for (int x = 0; x < TileX; x++)
+	{
+		for (int y = 0; y < TileY; y++)
+		{
+			const FVector Location(CaptureX, CpatureY, 0.0f);
+			if (y == 0 || x == 0 || y == TileY - 1 || x == TileX - 1 || y % 2 == 0 && x % 2 == 0)
+			{
+				MazeGrid.Rows[x].Columns[y] = SpawnBlock(Wall, Location);
+			}
+		}
 	}
 }
 
