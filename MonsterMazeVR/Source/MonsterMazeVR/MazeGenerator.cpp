@@ -205,8 +205,14 @@ AActor* AMazeGenerator::SpawnBlock(UClass* BlockType, const FVector Location, co
 	return NewBlock;
 }
 
-void AMazeGenerator::ReplaceBlock(UClass* NewBlock, int MazeX, int MAzeY)
+void AMazeGenerator::ReplaceBlock(UClass* NewBlock, int MazeX, int MazeY)
 {
-	
+	auto BlockToDestroy = MazeGrid.Rows[MazeX].Columns[MazeY];
+	if (BlockToDestroy != nullptr)
+	{
+		FVector Location = BlockToDestroy->GetActorLocation();
+		BlockToDestroy->Destroy();
+		MazeGrid.Rows[MazeX].Columns[MazeY] = SpawnBlock(NewBlock, Location);
+	}
 }
 
