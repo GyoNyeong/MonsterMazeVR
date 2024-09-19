@@ -110,9 +110,6 @@ public:
 	TSubclassOf<AActor> Wall;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
-	TSubclassOf<AActor> Ground;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
 	TSubclassOf<AActor> ExitPortal;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")

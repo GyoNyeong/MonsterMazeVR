@@ -63,7 +63,7 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 	}
 
 	// 벽 Wall 과 바닥 Ground 이 설정되지 않았을 때 함수 종료
-	if (Ground == nullptr || Wall == nullptr)
+	if (Wall == nullptr)
 	{
 		return;
 	}
@@ -96,14 +96,11 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 		for (int y = 0; y < TileY; y++)
 		{
 			const FVector Location(GetActorLocation().X + CaptureX, GetActorLocation().Y + CaptureY, 0.0f);
+			// 조건에 맞으면 벽 생성
 			//const FVector Location(CaptureX, CaptureY, 0.0f);
 			if (y == 0 || x == 0 || y == TileY - 1 || x == TileX - 1 || y % 2 == 0 && x % 2 == 0)
 			{
 				MazeGrid.Rows[x].Columns[y] = SpawnBlock(Wall, Location);
-			}
-			else
-			{
-				MazeGrid.Rows[x].Columns[y] = SpawnBlock(Ground, Location);;
 			}
 
 			// spawn PlayerStart
@@ -158,9 +155,13 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 
 		if (NextX >= 0 && NextX < TileX && NextY >= 0 && NextY < TileY)
 		{
-			if (!MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
+			if (MazeGrid.Rows[NextX].Columns[NextY] != nullptr && !MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
 			{
 				ReplaceBlock(Wall, NextX, NextY);
+			}
+			else if (MazeGrid.Rows[NextX].Columns[NextY] == nullptr)
+			{
+				MazeGrid.Rows[NextX].Columns[NextY] = SpawnBlock(Wall, FVector(NextX * 350.0f, NextY * 350.0f, 0));
 			}
 		}
 		else
@@ -192,9 +193,13 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 
 			if (NextX >= 0 && NextX < TileX && NextY >= 0 && NextY < TileY)
 			{
-				if (!MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
+				if (MazeGrid.Rows[NextX].Columns[NextY] != nullptr && !MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
 				{
 					ReplaceBlock(Wall, NextX, NextY);
+				}
+				else if (MazeGrid.Rows[NextX].Columns[NextY] == nullptr)
+				{
+					MazeGrid.Rows[NextX].Columns[NextY] = SpawnBlock(Wall, FVector(NextX * 350.0f, NextY * 350.0f, 0));
 				}
 			}
 			else
