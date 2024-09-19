@@ -12,6 +12,10 @@ class MONSTERMAZEVR_API AGround : public AActor
 	GENERATED_BODY()
 	
 public:	
+
+	UPROPERTY(EditAnywhere, Category = "Components")
+	UStaticMeshComponent* Mesh;
+
 	// Sets default values for this actor's properties
 	AGround();
 
