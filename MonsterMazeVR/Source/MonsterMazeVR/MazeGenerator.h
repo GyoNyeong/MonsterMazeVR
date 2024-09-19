@@ -16,7 +16,7 @@ struct FMazeGridRow
 
 	void AddNewColumn()
 	{
-		Columns.Add(NULL);
+		Columns.Add(nullptr);
 	}
 
 	// default properties
@@ -77,6 +77,12 @@ struct FMazeGrid
 				}
 			}
 		}
+		//Empty
+		for (int32 v = 0; v < Rows.Num(); v++)
+		{
+			Rows[v].Columns.Empty();
+		}
+		Rows.Empty();
 	}
 
 	FMazeGrid()
@@ -115,7 +121,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "MazeGen")
 	void GenerateMaze(int TileX, int TileY);
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	FMazeGrid MazeGrid;
 
 	// Sets default values for this actor's properties
@@ -136,6 +142,6 @@ private:
 	AActor* SpawnedPlayerStart;
 	AActor* SpawnedExitPortal;
 
-	void ReplaceBlock(UClass* NewBlock, int MazeX, int MAzeY);
-	AActor* SpawnBlock(UClass* BlockType, FVector Locatiom, FRotator Rotation = FRotator(0, 0, 0));
+	void ReplaceBlock(UClass* NewBlock, int MazeX, int MazeY);
+	AActor* SpawnBlock(UClass* BlockType, FVector Location, FRotator Rotation = FRotator(0, 0, 0));
 };

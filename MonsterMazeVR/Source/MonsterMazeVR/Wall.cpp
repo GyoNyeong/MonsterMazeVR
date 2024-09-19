@@ -15,7 +15,7 @@ AWall::AWall()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MESH"));
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	Mesh->SetRelativeLocation(FVector(175, 175, 175));
-	Mesh->SetRelativeScale3D(FVector(3.5, 3.5, 3.5));
+	Mesh->SetRelativeScale3D(FVector(3.5, 3.5, 7));
 	Mesh->SetupAttachment(RootComponent);
 
 }

@@ -35,6 +35,7 @@ void AMazeGenerator::PostEditChangeProperty(struct FPropertyChangedEvent& e)
 void AMazeGenerator::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	GenerateMaze(SizeX, SizeY);
 	
 }
@@ -49,6 +50,7 @@ void AMazeGenerator::Tick(float DeltaTime)
 // 미로 생성 핵심 함수
 void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 {
+	
 	// 미로 크기 처리 : 미로 크기가 짝수이면 오류, 미로 크기가 홀수 크기에서만 생성.
 	// only odd numbers allowed
 	if (TileX % 2 == 0 || TileY % 2 == 0)
@@ -93,14 +95,15 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 	{
 		for (int y = 0; y < TileY; y++)
 		{
-			const FVector Location(CaptureX, CaptureY, 0.0f);
+			const FVector Location(GetActorLocation().X + CaptureX, GetActorLocation().Y + CaptureY, 0.0f);
+			//const FVector Location(CaptureX, CaptureY, 0.0f);
 			if (y == 0 || x == 0 || y == TileY - 1 || x == TileX - 1 || y % 2 == 0 && x % 2 == 0)
 			{
 				MazeGrid.Rows[x].Columns[y] = SpawnBlock(Wall, Location);
 			}
 			else
 			{
-				MazeGrid.Rows[x].Columns[y] = SpawnBlock(Ground, Location);
+				MazeGrid.Rows[x].Columns[y] = SpawnBlock(Ground, Location);;
 			}
 
 			// spawn PlayerStart
@@ -135,9 +138,11 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 	{
 		int NextX = 2;
 		int NextY = y;
-		// int random4
 
-		switch (rand() % 4)
+		// rand() 대신 FMath::RandRange() 사용
+		int Logrand = FMath::RandRange(0, 3);  // 0~3 사이의 난수 생성
+		// int random4
+		switch (Logrand)
 		{
 		case 0: NextX++;
 			break;
@@ -146,13 +151,17 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 		case 2: NextY++;
 			break;
 		case 3: NextY--;
+			break;
 		default:
 			break;
 		}
 
-		if (!MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
+		if (NextX >= 0 && NextX < TileX && NextY >= 0 && NextY < TileY)
 		{
-			ReplaceBlock(Wall, NextX, NextY);
+			if (!MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
+			{
+				ReplaceBlock(Wall, NextX, NextY);
+			}
 		}
 		else
 		{
@@ -166,7 +175,10 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 			int NextX = x;
 			int NextY = y;
 
-			switch (rand() % 3)
+			// rand() 대신 FMath::RandRange() 사용
+			int Logrand = FMath::RandRange(0, 2);  // 0~2 사이의 난수 생성
+
+			switch (Logrand)
 			{
 			case 0: NextY++;
 				break;
@@ -178,9 +190,12 @@ void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
 				break;
 			}
 
-			if (!MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
+			if (NextX >= 0 && NextX < TileX && NextY >= 0 && NextY < TileY)
 			{
-				ReplaceBlock(Wall, NextX, NextY);
+				if (!MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
+				{
+					ReplaceBlock(Wall, NextX, NextY);
+				}
 			}
 			else
 			{
@@ -197,22 +212,29 @@ AActor* AMazeGenerator::SpawnBlock(UClass* BlockType, const FVector Location, co
 		return nullptr;
 	}
 	AActor* NewBlock = GetWorld()->SpawnActor<AActor>(BlockType, Location, Rotation);
-
 	#if WITH_EDITOR
-	NewBlock->SetFolderPath("/Maze");
+		NewBlock->SetFolderPath("/Maze");
 	#endif
-
 	return NewBlock;
 }
 
 void AMazeGenerator::ReplaceBlock(UClass* NewBlock, int MazeX, int MazeY)
 {
+	//if (NewBlock == nullptr)
+	//{
+	//	return;
+	//}
+
 	auto BlockToDestroy = MazeGrid.Rows[MazeX].Columns[MazeY];
 	if (BlockToDestroy != nullptr)
 	{
 		FVector Location = BlockToDestroy->GetActorLocation();
-		BlockToDestroy->Destroy();
-		MazeGrid.Rows[MazeX].Columns[MazeY] = SpawnBlock(NewBlock, Location);
+		// 블록이 Wall로 교체되지 않았으면 새로운 블록을 생성
+		if (!BlockToDestroy->IsA(NewBlock->StaticClass()))
+		{
+			BlockToDestroy->Destroy();
+			MazeGrid.Rows[MazeX].Columns[MazeY] = SpawnBlock(NewBlock, Location);
+		}
 	}
 }
 

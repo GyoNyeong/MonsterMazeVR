@@ -25,7 +25,7 @@ void AMazeGameMode::BeginPlay()
 	auto LevelName = GetWorld()->GetMapName();
 	LevelName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
 	
-	if (LevelName.Contains("TestLoadLevels"))
+	if (LevelName.Contains("TestLevels"))
 	{
 		StartNextLevel();
 		GetWorldTimerManager().SetTimer(MazeCompletionTimerHandle, this, &AMazeGameMode::IncrementMazeCompletionTime, 1.0f, true);

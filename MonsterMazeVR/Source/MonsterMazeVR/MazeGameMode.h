@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(minimalapi)
+UCLASS()
 class MONSTERMAZEVR_API AMazeGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
