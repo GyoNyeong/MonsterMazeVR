@@ -10,7 +10,7 @@ AMonsterAIController::AMonsterAIController()
 {
 	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
 	AIPerception->OnTargetPerceptionUpdated.AddDynamic(this, &AMonsterAIController::OnTargetDetected);
-}
+}s
 
 void AMonsterAIController::BeginPlay()
 {
