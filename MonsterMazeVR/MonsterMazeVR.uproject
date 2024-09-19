@@ -9,7 +9,8 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine"
+				"Engine",
+				"AIModule"
 			]
 		}
 	],
@@ -40,6 +41,10 @@
 				"Linux",
 				"Android"
 			]
+		},
+		{
+			"Name": "MonsterBase",
+			"Enabled": false
 		}
 	],
 	"TargetPlatforms": [
