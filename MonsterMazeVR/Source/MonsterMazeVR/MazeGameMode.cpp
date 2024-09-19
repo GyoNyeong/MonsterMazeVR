@@ -34,15 +34,55 @@ void AMazeGameMode::BeginPlay()
 
 void AMazeGameMode::IncrementMazeCompletionTime()
 {
-	Total
+	TotalSecondsMazeCompletion++;
 }
 
 void AMazeGameMode::LevelComplete()
 {
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, FString::Printf(TEXT("Level Complete, seconds since start: %d"), TotalSecondsMazeCompletion));
+	}
+	GetWorldTimerManager().ClearTimer(MazeCompletionTimerHandle);
+	if (CurrentLevel)
+	{
+		CurrentLevel->Destroy();
+		CurrentLevelIndex++;
+		StartNextLevel();
+	}
 }
 
 void AMazeGameMode::StartNextLevel()
 {
+	if (Levels.Num() == 0 || CurrentLevelIndex > Levels.Num() - 1)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 25.0f, FColor::Red, TEXT("END GAME!"));
+		return;
+	}
+
+	const auto Location = FVector(0, 0, 0);
+	const auto Rotation = FRotator(0, 0, 0);
+	CurrentLevel = GetWorld()->SpawnActor<AActor>(Levels[CurrentLevelIndex], Location, Rotation);
+
+	for (auto ChildActor : CurrentLevel->GetComponents())
+	{
+		const auto ChildActorComponent = Cast<UChildActorComponent>(ChildActor);
+		if (ChildActorComponent)
+		{
+			const auto PlayerStart = Cast<APlayerStart>(ChildActorComponent->GetChildActor());
+			if (PlayerStart)
+			{
+				auto MyCharacter = GetWorld()->GetFirstPlayerController()->GetPawn();
+				MyCharacter->SetActorTransform(PlayerStart->GetActorTransform());
+			}
+
+			auto ExitPortal = Cast<AExitPortal>(ChildActorComponent->GetChildActor());
+			if (ExitPortal)
+			{
+				ExitPortal->LevelComplete.AddDynamic(this, &AMazeGameMode::LevelComplete);
+			}
+		}
+	}
 }
 
 
