@@ -17,14 +17,14 @@ public:
 	// Sets default values for this actor's properties
 	AExitPortal();
 
-	UPROPERTY(BlueprintAssignable, Category = "Callback")
+	UPROPERTY(BlueprintAssignable, Category = Callback)
 	FLevelComplete LevelComplete;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UPROPERTY(EditDefaultsOnly, Category = Components)
 	UStaticMeshComponent* Mesh;
 
 	UFUNCTION()
