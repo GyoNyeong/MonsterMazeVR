@@ -30,4 +30,7 @@ public:
 	UBehaviorTree* BTMonster;
 
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnTargetDetected(AActor* actor, FAIStimulus const Stimuls);
 };
