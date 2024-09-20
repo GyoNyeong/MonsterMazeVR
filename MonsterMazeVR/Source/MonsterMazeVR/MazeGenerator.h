@@ -6,99 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "MazeGenerator.generated.h"
 
-USTRUCT()
-struct FMazeGridRow
-{
-	GENERATED_BODY()
-	
-	UPROPERTY()
-	TArray<AActor*> Columns;
-
-	void AddNewColumn()
-	{
-		Columns.Add(nullptr);
-	}
-
-	// default properties
-	FMazeGridRow()
-	{
-	}
-
-};
-
-USTRUCT()
-struct FMazeGrid
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	TArray<FMazeGridRow> Rows;
-
-	void AddNewRow()
-	{
-		Rows.Add(FMazeGridRow());
-	}
-
-	void AddUninitialized(const int32 RowCount, const int32 ColCount)
-	{
-		// Add Rows
-		for (int32 r = 0; r < RowCount; r++)
-		{
-			AddNewRow();
-		}
-
-		// Add columns
-		for (int32 r = 0; r < RowCount; r++)
-		{
-			for (int c = 0; c < ColCount; c++)
-			{
-				Rows[r].AddNewColumn();
-			}
-		}
-	}
-
-	void Clear()
-	{
-		if (Rows.Num() <= 0)
-		{
-			return;
-		}
-		
-		const int32 RowTotal = Rows.Num();
-		const int32 ColTotal = Rows[0].Columns.Num();
-
-		for (int32 r = 0; r < RowTotal; r++)
-		{
-			for (int32 c = 0; c < ColTotal; c++)
-			{
-				if (Rows[r].Columns[c] && Rows[r].Columns[c]->IsValidLowLevel())
-				{
-					Rows[r].Columns[c]->Destroy();
-				}
-			}
-		}
-		//Empty
-		for (int32 v = 0; v < Rows.Num(); v++)
-		{
-			Rows[v].Columns.Empty();
-		}
-		Rows.Empty();
-	}
-
-	FMazeGrid()
-	{
-	}
-};
-
 
 UCLASS()
 class MONSTERMAZEVR_API AMazeGenerator : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Maze Properites")
-	bool RegenerateMaze;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Maze Properites")
 	int SizeX;
@@ -116,29 +30,27 @@ public:
 	TSubclassOf<AActor> PlayerStart;
 
 	UFUNCTION(BlueprintCallable, Category = "MazeGen")
-	void GenerateMaze(int TileX, int TileY);
-
-	UPROPERTY(VisibleAnywhere)
-	FMazeGrid MazeGrid;
+	void GenerateMaze();
 
 	// Sets default values for this actor's properties
 	AMazeGenerator();
-
-	// Actor or Component의 속성이 변경될 때 자동으로 호출되는 함수.
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& e) override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	// 2차원 배열을 미로 구조로 사용
+	TArray<TArray<bool>> MazeArray; // true : 벽, false : 통로
 
-private:
+	// Player start and exit portal references
 	AActor* SpawnedPlayerStart;
 	AActor* SpawnedExitPortal;
+	
+	// DFS 알고리즘을 사용하여 미로를 생성하는 함수
+	void CarveMazeDFS(int X, int Y);
 
-	void ReplaceBlock(UClass* NewBlock, int MazeX, int MazeY);
+	// Helper functions
+	void InitializeMazeArray();
+	void ClearMaze();
 	AActor* SpawnBlock(UClass* BlockType, FVector Location, FRotator Rotation = FRotator(0, 0, 0));
 };

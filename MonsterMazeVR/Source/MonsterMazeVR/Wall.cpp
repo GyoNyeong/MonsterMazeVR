@@ -17,6 +17,7 @@ AWall::AWall()
 	Mesh->SetRelativeLocation(FVector(175, 175, 175));
 	Mesh->SetRelativeScale3D(FVector(3.5, 3.5, 7));
 	Mesh->SetupAttachment(RootComponent);
+	//Mesh->SetCollisionProfileName(TEXT("BlockAll"));
 
 }
 

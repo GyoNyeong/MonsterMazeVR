@@ -2,213 +2,129 @@
 
 
 #include "MazeGenerator.h"
-#include "Wall.h"
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
+#include "Math/UnrealMathUtility.h"
+#include "Kismet/GameplayStatics.h"
 
 const int MazeSizeMax = 101;
+const float distance = 350.0f;
 
 // Sets default values
 AMazeGenerator::AMazeGenerator()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	SizeX = 5;
 	SizeY = 5;
-	RegenerateMaze = false;
 }
 
-// 에디터에서 RegenerateMaze 속성이 변경될 때 호출.
-void AMazeGenerator::PostEditChangeProperty(struct FPropertyChangedEvent& e)
-{
-	Super::PostEditChangeProperty(e);
-
-	// 변경된 Property 이름을 얻음. 
-	FName PropertyName = (e.Property != NULL) ? e.Property->GetFName() : NAME_None;
-
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(AMazeGenerator, RegenerateMaze))
-	{
-		RegenerateMaze = false;
-		GenerateMaze(SizeX, SizeY);
-	}
-}
 
 // Called when the game starts or when spawned
 void AMazeGenerator::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	GenerateMaze(SizeX, SizeY);
-	
+	GenerateMaze();
 }
 
-// Called every frame
-void AMazeGenerator::Tick(float DeltaTime)
+void AMazeGenerator::InitializeMazeArray()
 {
-	Super::Tick(DeltaTime);
+	MazeArray.SetNum(SizeX);
+	for (int32 x = 0; x < SizeX; x++)
+	{
+		MazeArray[x].SetNum(SizeY);
+		for (int32 y = 0; y < SizeY; y++)
+		{
+			MazeArray[x][y] = true; // 기본 벽을 설정
+		}
+	}
+}
 
+void AMazeGenerator::ClearMaze()
+{
+	for (int32 x = 0; x < SizeX; x++)
+	{
+		for (int32 y = 0; y < SizeY; y++)
+		{
+			if (MazeArray[x][y])
+			{
+				FVector Location = FVector(x * distance, y * distance, 170.0f);
+				SpawnBlock(Wall, Location);
+			}
+		}
+	}
 }
 
 // 미로 생성 핵심 함수
-void AMazeGenerator::GenerateMaze(const int TileX, const int TileY)
+void AMazeGenerator::GenerateMaze()
 {
-	
-	// 미로 크기 처리 : 미로 크기가 짝수이면 오류, 미로 크기가 홀수 크기에서만 생성.
-	// only odd numbers allowed
-	if (TileX % 2 == 0 || TileY % 2 == 0)
+	InitializeMazeArray(); // 2차원 배열 초기화
+
+	// DFS 알고리즘, 미로 생성 시작점 1,1
+	CarveMazeDFS(1, 1);
+
+	ClearMaze(); // 미로의 벽 생성
+
+	SpawnedPlayerStart = SpawnBlock(PlayerStart, FVector(distance*1.5, distance*1.5, 92.0f));
+	UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->SetActorLocation(FVector(distance * 1.5, distance * 1.5, 92.0f));
+	SpawnedExitPortal = SpawnBlock(ExitPortal, FVector((SizeX - 2) * distance, (SizeY - 2) * distance, 0.0f));
+}
+
+void AMazeGenerator::CarveMazeDFS(int X, int Y)
+{
+	// 방문할 수 있는 방향 (북, 동, 남, 서)
+	TArray<int32> Directions = { 0, 1, 2, 3 };
+
+	// 현재 위치는 통로로 설정
+	MazeArray[X][Y] = false;
+
+	for (int32 i = 0; i < 4; i++)
 	{
-		if (GEngine)
+		int RandomDirectionIndex = FMath::RandRange(0, Directions.Num() - 1);  // 0 ~ 3 사이의 무작위 인덱스 선택
+		int Direction = Directions[RandomDirectionIndex];  // 무작위 방향 선택
+
+		int DX = 0;
+		int DY = 0;
+		if (i == 0)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Only odd number allowed for Maze size X and Y"));
-		}
-		return;
-	}
-
-	// 벽 Wall 과 바닥 Ground 이 설정되지 않았을 때 함수 종료
-	if (Wall == nullptr)
-	{
-		return;
-	}
-
-	// 변수 초기화
-	float CaptureX = 0.0f;
-	float CaptureY = 0.0f;
-	const float Offset = 350.0f;
-
-	// 기존 PlayerStart 와 ExitPortal 제거
-	// Destroy already spawned PlayerStart and ExitPortal if sapwned in editor
-	if (SpawnedPlayerStart != nullptr)
-	{
-		SpawnedPlayerStart->Destroy();
-	}
-	if (SpawnedExitPortal != nullptr)
-	{
-		SpawnedExitPortal->Destroy();
-	}
-
-	// 미로 초기화
-	// Init Maze
-	MazeGrid.Clear();
-	MazeGrid.AddUninitialized(TileX, TileY);
-
-	// 미로의 기본 구조 생성
-	// this builds outer walls and the initial symmetric grid structure filled with walls separated equally by ground blocks
-	for (int x = 0; x < TileX; x++)
-	{
-		for (int y = 0; y < TileY; y++)
-		{
-			const FVector Location(GetActorLocation().X + CaptureX, GetActorLocation().Y + CaptureY, 0.0f);
-			// 조건에 맞으면 벽 생성
-			//const FVector Location(CaptureX, CaptureY, 0.0f);
-			if (y == 0 || x == 0 || y == TileY - 1 || x == TileX - 1 || y % 2 == 0 && x % 2 == 0)
+			if (Direction == 0)
 			{
-				MazeGrid.Rows[x].Columns[y] = SpawnBlock(Wall, Location);
+				Direction = 1;
 			}
-
-			// spawn PlayerStart
-			if (CaptureX == Offset && CaptureY == Offset)
+			if (Direction == 3)
 			{
-				const auto CenterBlockLocation = FVector(Location.X + (Offset / 2), Location.Y + (Offset / 2), Location.Z + (Offset / 2));
-				SpawnedPlayerStart = SpawnBlock(PlayerStart, CenterBlockLocation);
-			}
-			// spawn ExitPortal
-			if (y == TileY - 1 && x == TileX - 1)
-			{
-				const auto CenterBlockLocation = FVector(Location.X - (Offset / 2), Location.Y - (Offset / 2), Location.Z + (Offset / 2));
-				SpawnedExitPortal = SpawnBlock(ExitPortal, CenterBlockLocation);
-			}
-
-			CaptureY += Offset;
-			if (CaptureY >= Offset * TileY)
-			{
-				CaptureY = 0;
+				Direction = 2;
 			}
 		}
-		CaptureX += Offset;
-		if (CaptureX >= Offset * TileX)
+		switch (Direction)
 		{
-			CaptureX = 0;
-		}
-	}
-	
-	// 미로 무작위로 벽 추가
-	// this adds walls to the existing grid to from random corridors
-	for (int y = 2; y < TileY - 1; y += 2)
-	{
-		int NextX = 2;
-		int NextY = y;
-
-		// rand() 대신 FMath::RandRange() 사용
-		int Logrand = FMath::RandRange(0, 3);  // 0~3 사이의 난수 생성
-		// int random4
-		switch (Logrand)
-		{
-		case 0: NextX++;
+		case 0: DX = -2;
 			break;
-		case 1: NextX--;
+		case 1: DX = 2;
 			break;
-		case 2: NextY++;
+		case 2: DY = 2;
 			break;
-		case 3: NextY--;
+		case 3: DY = -2;
 			break;
 		default:
 			break;
 		}
 
-		if (NextX >= 0 && NextX < TileX && NextY >= 0 && NextY < TileY)
+		int NX = X + DX;
+		int NY = Y + DY;
+		// 새로운 좌표가 미로 범위 안에 있고 아직 방문하지 않은 곳일 경우
+		if (NX > 0 && NX < SizeX - 1 && NY > 0 && NY < SizeY - 1 && MazeArray[NX][NY])
 		{
-			if (MazeGrid.Rows[NextX].Columns[NextY] != nullptr && !MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
-			{
-				ReplaceBlock(Wall, NextX, NextY);
-			}
-			else if (MazeGrid.Rows[NextX].Columns[NextY] == nullptr)
-			{
-				MazeGrid.Rows[NextX].Columns[NextY] = SpawnBlock(Wall, FVector(NextX * 350.0f, NextY * 350.0f, 0));
-			}
-		}
-		else
-		{
-			y -= 2;
-		}
-	}
-	for (int x = 4; x < TileX - 1; x += 2)
-	{
-		for (int y = 2; y < TileY - 1; y += 2)
-		{
-			int NextX = x;
-			int NextY = y;
+			// 두 칸 이동하여 통로를 만들고 중간에 벽을 제거
+			MazeArray[NX][NY] = false;
+			MazeArray[X + DX / 2][Y + DY / 2] = false;
 
-			// rand() 대신 FMath::RandRange() 사용
-			int Logrand = FMath::RandRange(0, 2);  // 0~2 사이의 난수 생성
-
-			switch (Logrand)
-			{
-			case 0: NextY++;
-				break;
-			case 1: NextY--;
-				break;
-			case 2: NextX++;
-				break;
-			default:
-				break;
-			}
-
-			if (NextX >= 0 && NextX < TileX && NextY >= 0 && NextY < TileY)
-			{
-				if (MazeGrid.Rows[NextX].Columns[NextY] != nullptr && !MazeGrid.Rows[NextX].Columns[NextY]->IsA(AWall::StaticClass()))
-				{
-					ReplaceBlock(Wall, NextX, NextY);
-				}
-				else if (MazeGrid.Rows[NextX].Columns[NextY] == nullptr)
-				{
-					MazeGrid.Rows[NextX].Columns[NextY] = SpawnBlock(Wall, FVector(NextX * 350.0f, NextY * 350.0f, 0));
-				}
-			}
-			else
-			{
-				y -= 2;
-			}
+			// 재귀 호출로 다음 경로를 탐색
+			CarveMazeDFS(NX, NY);
 		}
 	}
 }
+
 
 AActor* AMazeGenerator::SpawnBlock(UClass* BlockType, const FVector Location, const FRotator Rotation)
 {
@@ -216,30 +132,13 @@ AActor* AMazeGenerator::SpawnBlock(UClass* BlockType, const FVector Location, co
 	{
 		return nullptr;
 	}
+
+	// 월드에 새로운 오브젝트 생성
 	AActor* NewBlock = GetWorld()->SpawnActor<AActor>(BlockType, Location, Rotation);
 	#if WITH_EDITOR
 		NewBlock->SetFolderPath("/Maze");
 	#endif
+
 	return NewBlock;
-}
-
-void AMazeGenerator::ReplaceBlock(UClass* NewBlock, int MazeX, int MazeY)
-{
-	//if (NewBlock == nullptr)
-	//{
-	//	return;
-	//}
-
-	auto BlockToDestroy = MazeGrid.Rows[MazeX].Columns[MazeY];
-	if (BlockToDestroy != nullptr)
-	{
-		FVector Location = BlockToDestroy->GetActorLocation();
-		// 블록이 Wall로 교체되지 않았으면 새로운 블록을 생성
-		if (!BlockToDestroy->IsA(NewBlock->StaticClass()))
-		{
-			BlockToDestroy->Destroy();
-			MazeGrid.Rows[MazeX].Columns[MazeY] = SpawnBlock(NewBlock, Location);
-		}
-	}
 }
 
