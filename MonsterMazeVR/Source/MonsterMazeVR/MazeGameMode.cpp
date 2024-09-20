@@ -39,17 +39,19 @@ void AMazeGameMode::IncrementMazeCompletionTime()
 
 void AMazeGameMode::LevelComplete()
 {
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, FString::Printf(TEXT("Level Complete, seconds since start: %d"), TotalSecondsMazeCompletion));
-	}
-	GetWorldTimerManager().ClearTimer(MazeCompletionTimerHandle);
-	if (CurrentLevel)
-	{
-		CurrentLevel->Destroy();
-		CurrentLevelIndex++;
-		StartNextLevel();
-	}
+	UGameplayStatics::OpenLevel(this, FName(TEXT("TestLevels")));
+
+	//if (GEngine)
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, FString::Printf(TEXT("Level Complete, seconds since start: %d"), TotalSecondsMazeCompletion));
+	//}
+	//GetWorldTimerManager().ClearTimer(MazeCompletionTimerHandle);
+	//if (CurrentLevel)
+	//{
+	//	CurrentLevel->Destroy();
+	//	CurrentLevelIndex++;
+	//	StartNextLevel();
+	//}
 }
 
 void AMazeGameMode::StartNextLevel()

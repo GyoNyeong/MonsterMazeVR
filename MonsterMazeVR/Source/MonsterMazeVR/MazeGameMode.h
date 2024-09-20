@@ -36,7 +36,7 @@ private:
 
 	void IncrementMazeCompletionTime();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void LevelComplete();
 
 	void StartNextLevel();
