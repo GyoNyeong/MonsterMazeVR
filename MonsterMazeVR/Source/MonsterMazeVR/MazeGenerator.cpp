@@ -67,7 +67,7 @@ void AMazeGenerator::GenerateMaze()
 
 	SpawnedPlayerStart = SpawnManager(PlayerStart, FVector(distance * 1.5, distance * 1.5, 92.0f));
 	UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->SetActorLocation(FVector(distance * 1.5, distance * 1.5, 92.0f));
-	SpawnedExitPortal = SpawnManager(ExitPortal, FVector((SizeX - 2) * distance, (SizeY - 2) * distance, 92.0f));
+	SpawnedExitPortal = SpawnManager(ExitPortal, FVector((SizeX - 2) * distance + 175.0f, (SizeY - 2) * distance + 175.0f, 92.0f));
 	
 	// 미로의 빈공간 false 인곳을 찾아 저장
 	TArray<FVector> EmptyLocation;
