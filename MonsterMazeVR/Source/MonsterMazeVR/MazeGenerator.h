@@ -29,6 +29,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
 	TSubclassOf<AActor> PlayerStart;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
+	TSubclassOf<AActor> Monster;
+
 	UFUNCTION(BlueprintCallable, Category = "MazeGen")
 	void GenerateMaze();
 
@@ -45,6 +48,7 @@ protected:
 	// Player start and exit portal references
 	AActor* SpawnedPlayerStart;
 	AActor* SpawnedExitPortal;
+	AActor* SpawnedMonster;
 	
 	// DFS 알고리즘을 사용하여 미로를 생성하는 함수
 	void CarveMazeDFS(int X, int Y);
@@ -52,5 +56,5 @@ protected:
 	// Helper functions
 	void InitializeMazeArray();
 	void ClearMaze();
-	AActor* SpawnBlock(UClass* BlockType, FVector Location, FRotator Rotation = FRotator(0, 0, 0));
+	AActor* SpawnManager (UClass* BlockType, FVector Location, FRotator Rotation = FRotator(0, 0, 0));
 };

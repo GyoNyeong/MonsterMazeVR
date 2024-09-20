@@ -49,7 +49,7 @@ void AMazeGenerator::ClearMaze()
 			if (MazeArray[x][y])
 			{
 				FVector Location = FVector(x * distance, y * distance, 170.0f);
-				SpawnBlock(Wall, Location);
+				SpawnManager(Wall, Location);
 			}
 		}
 	}
@@ -65,9 +65,40 @@ void AMazeGenerator::GenerateMaze()
 
 	ClearMaze(); // 미로의 벽 생성
 
-	SpawnedPlayerStart = SpawnBlock(PlayerStart, FVector(distance*1.5, distance*1.5, 92.0f));
+	SpawnedPlayerStart = SpawnManager(PlayerStart, FVector(distance * 1.5, distance * 1.5, 92.0f));
 	UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->SetActorLocation(FVector(distance * 1.5, distance * 1.5, 92.0f));
-	SpawnedExitPortal = SpawnBlock(ExitPortal, FVector((SizeX - 2) * distance, (SizeY - 2) * distance, 0.0f));
+	SpawnedExitPortal = SpawnManager(ExitPortal, FVector((SizeX - 2) * distance, (SizeY - 2) * distance, 92.0f));
+	
+	// 미로의 빈공간 false 인곳을 찾아 저장
+	TArray<FVector> EmptyLocation;
+
+	for (int32 x = 1; x < SizeX-1; x++)
+	{
+		for (int32 y = 1; y < SizeY-1; y++)
+		{
+			if (!MazeArray[x][y])
+			{
+				EmptyLocation.Add(FVector(x * distance + 175.0f, y * distance + 175.0f, 92.0f));
+			}
+		}
+	}
+
+	for (int MonsterSpawnCnt = 0; MonsterSpawnCnt < 5; MonsterSpawnCnt++)
+	{
+		if (EmptyLocation.Num() > 0)
+		{
+			int32 Randomindex = FMath::RandRange(0, EmptyLocation.Num() - 1);
+			FVector SpawnLoction = EmptyLocation[Randomindex];
+
+
+			// 몬스터 스폰
+			SpawnManager(Monster, SpawnLoction);
+
+			// 선택된 위치는 다시 사용하지 않도록 목록에서 제거
+			EmptyLocation.RemoveAt(Randomindex);
+
+		}
+	}
 }
 
 void AMazeGenerator::CarveMazeDFS(int X, int Y)
@@ -126,18 +157,34 @@ void AMazeGenerator::CarveMazeDFS(int X, int Y)
 }
 
 
-AActor* AMazeGenerator::SpawnBlock(UClass* BlockType, const FVector Location, const FRotator Rotation)
+AActor* AMazeGenerator::SpawnManager(UClass* BlockType, const FVector Location, const FRotator Rotation)
 {
 	if (BlockType == nullptr)
 	{
+		UE_LOG(LogTemp, Error, TEXT("Blocktype is nullptr in SpawnManager!"));
 		return nullptr;
 	}
 
 	// 월드에 새로운 오브젝트 생성
 	AActor* NewBlock = GetWorld()->SpawnActor<AActor>(BlockType, Location, Rotation);
-	#if WITH_EDITOR
+	if (NewBlock == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to spawn actor at location: %s"), *Location.ToString());
+		return nullptr;
+	}
+
+	// 몬스터가 아닌 경우에만 폴터 경로 설정
+	if (BlockType != Monster)
+	{
+		#if WITH_EDITOR
 		NewBlock->SetFolderPath("/Maze");
-	#endif
+		#endif
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Skipping folder path for Monster"));
+	}
+
 
 	return NewBlock;
 }
