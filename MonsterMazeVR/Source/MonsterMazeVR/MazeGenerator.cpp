@@ -97,7 +97,6 @@ void AMazeGenerator::GenerateMaze()
 	else if (RightGridX > 0 && RightGridX < SizeX && RightGridY > 0 && RightGridY < SizeY && !MazeArray[RightGridX][RightGridY])
 	{
 		SpawnedPlayerGunWeapon = SpawnManager(PlayerGunWeapon, GunSpawnRightLocation);
-		FRotator NewRotation = FRotator(0.0f, 90.0f, 0.0f);
 	}
 	else
 	{
@@ -118,36 +117,43 @@ void AMazeGenerator::GenerateMaze()
 		}
 	}
 
-	for (int MonsterSpawnCnt = 0; MonsterSpawnCnt < 5; MonsterSpawnCnt++)
-	{
-		if (EmptyLocation.Num() > 0)
-		{
-			int32 RandomIndex = FMath::RandRange(0, EmptyLocation.Num() - 1);
-			FVector SpawnLoction = EmptyLocation[RandomIndex];
+	SpawnActors(WarriorMonster, 5, EmptyLocation);
+	SpawnActors(MageMonster, 5, EmptyLocation);
+	SpawnActors(Bullet, 5, EmptyLocation);
+	SpawnActors(HealthPotion, 5, EmptyLocation);
+	SpawnActors(Trap, 5, EmptyLocation);
 
-			// 몬스터 스폰
-			SpawnedMonster = SpawnManager(Monster, SpawnLoction);
 
-			// 선택된 위치는 다시 사용하지 않도록 목록에서 제거
-			EmptyLocation.RemoveAt(RandomIndex);
+	//for (int MonsterSpawnCnt = 0; MonsterSpawnCnt < 5; MonsterSpawnCnt++)
+	//{
+	//	if (EmptyLocation.Num() > 0)
+	//	{
+	//		int32 RandomIndex = FMath::RandRange(0, EmptyLocation.Num() - 1);
+	//		FVector SpawnLoction = EmptyLocation[RandomIndex];
 
-		}
-	}
+	//		// 몬스터 스폰
+	//		SpawnedMonster = SpawnManager(Monster, SpawnLoction);
 
-	for (int BulletSpawnCnt = 0; BulletSpawnCnt < 5; BulletSpawnCnt++)
-	{
-		if (EmptyLocation.Num() > 0)
-		{
-			int32 RandomIndex = FMath::RandRange(0, EmptyLocation.Num() - 1);
-			FVector BulletSpawnLocation = EmptyLocation[RandomIndex];
+	//		// 선택된 위치는 다시 사용하지 않도록 목록에서 제거
+	//		EmptyLocation.RemoveAt(RandomIndex);
 
-			// 총알 스폰
-			SpawnedBullet = SpawnManager(Bullet, BulletSpawnLocation);
+	//	}
+	//}
 
-			// 선택된 위치는 다시 사용하지 않도록 목록에서 제거
-			EmptyLocation.RemoveAt(RandomIndex);
-		}
-	}
+	//for (int BulletSpawnCnt = 0; BulletSpawnCnt < 5; BulletSpawnCnt++)
+	//{
+	//	if (EmptyLocation.Num() > 0)
+	//	{
+	//		int32 RandomIndex = FMath::RandRange(0, EmptyLocation.Num() - 1);
+	//		FVector BulletSpawnLocation = EmptyLocation[RandomIndex];
+
+	//		// 총알 스폰
+	//		SpawnedBullet = SpawnManager(Bullet, BulletSpawnLocation);
+
+	//		// 선택된 위치는 다시 사용하지 않도록 목록에서 제거
+	//		EmptyLocation.RemoveAt(RandomIndex);
+	//	}
+	//}
 }
 
 void AMazeGenerator::CarveMazeDFS(int X, int Y)
@@ -223,7 +229,7 @@ AActor* AMazeGenerator::SpawnManager(UClass* BlockType, const FVector Location, 
 	}
 
 	// 몬스터가 아닌 경우에만 폴터 경로 설정
-	if (BlockType != Monster)
+	if (BlockType != WarriorMonster && BlockType != MageMonster)
 	{
 		#if WITH_EDITOR
 		NewBlock->SetFolderPath("/Maze");
@@ -236,5 +242,23 @@ AActor* AMazeGenerator::SpawnManager(UClass* BlockType, const FVector Location, 
 
 
 	return NewBlock;
+}
+
+void AMazeGenerator::SpawnActors(UClass* ActorType, int32 SpawnCount, TArray<FVector>& EmptyLocation)
+{
+	for (int32 i = 0; i < SpawnCount; i++)
+	{
+		if (EmptyLocation.Num() > 0)
+		{
+			int32 RandomIndex = FMath::RandRange(0, EmptyLocation.Num() - 1);
+			FVector SpawnLoction = EmptyLocation[RandomIndex];
+
+			// 엑터 스폰
+			SpawnManager(ActorType, SpawnLoction);
+
+			// 선택된 위치는 다시 사용하지 않도록 목록에서 제거
+			EmptyLocation.RemoveAt(RandomIndex);
+		}
+	}
 }
 

@@ -30,13 +30,22 @@ public:
 	TSubclassOf<AActor> PlayerStart;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
-	TSubclassOf<AActor> Monster;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
 	TSubclassOf<AActor> PlayerGunWeapon;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
+	TSubclassOf<AActor> WarriorMonster;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
+	TSubclassOf<AActor> MageMonster;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
 	TSubclassOf<AActor> Bullet;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
+	TSubclassOf<AActor> HealthPotion;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
+	TSubclassOf<AActor> Trap;
 
 	UFUNCTION(BlueprintCallable, Category = "MazeGen")
 	void GenerateMaze();
@@ -52,11 +61,11 @@ protected:
 	TArray<TArray<bool>> MazeArray; // true : 벽, false : 통로
 
 	// Player start and exit portal references
+	// 해당 스폰한 위치를 수정해야할 때 사용하는 변수
 	AActor* SpawnedPlayerStart;
 	AActor* SpawnedExitPortal;
-	AActor* SpawnedMonster;
 	AActor* SpawnedPlayerGunWeapon;
-	AActor* SpawnedBullet;
+
 	
 	// DFS 알고리즘을 사용하여 미로를 생성하는 함수
 	void CarveMazeDFS(int X, int Y);
@@ -65,4 +74,6 @@ protected:
 	void InitializeMazeArray();
 	void ClearMaze();
 	AActor* SpawnManager (UClass* BlockType, FVector Location, FRotator Rotation = FRotator(0, 0, 0));
+	
+	void SpawnActors(UClass* ActorType, int32 SpawnCount, TArray<FVector>& EmptyLocation);
 };
