@@ -69,22 +69,35 @@ void AMazeGenerator::GenerateMaze()
 	FVector PlayerStartLocation = FVector(distance * 1.5, distance * 1.5, 92.0f);
 	SpawnedPlayerStart = SpawnManager(PlayerStart, PlayerStartLocation);
 	UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->SetActorLocation(FVector(distance * 1.5, distance * 1.5, 92.0f));
+	
 
 	// ExitPortal 스폰
 	SpawnedExitPortal = SpawnManager(ExitPortal, FVector((SizeX - 2) * distance + 175.0f, (SizeY - 2) * distance + 175.0f, 92.0f));
 
-	// PlayerWeapon 을 PlayerStart 의 바로 앞 칸에 스폰
 	// PlayerStart 근처의 통로를 확인한 후, PlayerGunWeapon 스폰
+	// PlayerWeapon을 스폰할 위치 결정
 	FVector PlayerForwardDirection = FVector(distance, 0.0f, 0.0f);
-	FVector GunSpawnLocation = PlayerStartLocation + PlayerForwardDirection;
+	FVector PlayerRightDirection = FVector(0.0f, distance, 0.0f);
 
-	// GunSpawnLocation 이 벽이 아닌 통로인지 확인
-	int32 GridX = FMath::FloorToInt(GunSpawnLocation.X / distance);
-	int32 GridY = FMath::FloorToInt(GunSpawnLocation.Y / distance);
+	FVector GunSpawnForwardLocation = PlayerStartLocation + PlayerForwardDirection;
+	FVector GunSpawnRightLocation = PlayerStartLocation + PlayerRightDirection;
 
-	if (GridX > 0 && GridX < SizeX && GridY > 0 && GridY < SizeY && !MazeArray[GridX][GridY])
+	// GunSpawnForwardLocation과 GunSpawnRightLocation이 벽이 아닌지 확인
+	int32 ForwardGridX = FMath::FloorToInt(GunSpawnForwardLocation.X / distance);
+	int32 ForwardGridY = FMath::FloorToInt(GunSpawnForwardLocation.Y / distance);
+
+	int32 RightGridX = FMath::FloorToInt(GunSpawnRightLocation.X / distance);
+	int32 RightGridY = FMath::FloorToInt(GunSpawnRightLocation.Y / distance);
+
+
+	if (ForwardGridX > 0 && ForwardGridX < SizeX && ForwardGridY > 0 && ForwardGridY < SizeY && !MazeArray[ForwardGridX][ForwardGridY])
 	{
-		SpawnedPlayerGunWeapon = SpawnManager(PlayerGunWeapon, GunSpawnLocation);
+		SpawnedPlayerGunWeapon = SpawnManager(PlayerGunWeapon, GunSpawnForwardLocation);
+	}
+	else if (RightGridX > 0 && RightGridX < SizeX && RightGridY > 0 && RightGridY < SizeY && !MazeArray[RightGridX][RightGridY])
+	{
+		SpawnedPlayerGunWeapon = SpawnManager(PlayerGunWeapon, GunSpawnRightLocation);
+		FRotator NewRotation = FRotator(0.0f, 90.0f, 0.0f);
 	}
 	else
 	{
