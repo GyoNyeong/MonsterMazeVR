@@ -65,16 +65,38 @@ void AMazeGenerator::GenerateMaze()
 
 	ClearMaze(); // 미로의 벽 생성
 
-	SpawnedPlayerStart = SpawnManager(PlayerStart, FVector(distance * 1.5, distance * 1.5, 92.0f));
+	// PlayerStart 스폰
+	FVector PlayerStartLocation = FVector(distance * 1.5, distance * 1.5, 92.0f);
+	SpawnedPlayerStart = SpawnManager(PlayerStart, PlayerStartLocation);
 	UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->SetActorLocation(FVector(distance * 1.5, distance * 1.5, 92.0f));
+
+	// ExitPortal 스폰
 	SpawnedExitPortal = SpawnManager(ExitPortal, FVector((SizeX - 2) * distance + 175.0f, (SizeY - 2) * distance + 175.0f, 92.0f));
-	
+
+	// PlayerWeapon 을 PlayerStart 의 바로 앞 칸에 스폰
+	// PlayerStart 근처의 통로를 확인한 후, PlayerGunWeapon 스폰
+	FVector PlayerForwardDirection = FVector(distance, 0.0f, 0.0f);
+	FVector GunSpawnLocation = PlayerStartLocation + PlayerForwardDirection;
+
+	// GunSpawnLocation 이 벽이 아닌 통로인지 확인
+	int32 GridX = FMath::FloorToInt(GunSpawnLocation.X / distance);
+	int32 GridY = FMath::FloorToInt(GunSpawnLocation.Y / distance);
+
+	if (GridX > 0 && GridX < SizeX && GridY > 0 && GridY < SizeY && !MazeArray[GridX][GridY])
+	{
+		SpawnedPlayerGunWeapon = SpawnManager(PlayerGunWeapon, GunSpawnLocation);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Gun cannot be spawned at the location because it is a wall"));
+	}
+
 	// 미로의 빈공간 false 인곳을 찾아 저장
 	TArray<FVector> EmptyLocation;
 
-	for (int32 x = 1; x < SizeX-1; x++)
+	for (int32 x = 1; x < SizeX - 1; x++)
 	{
-		for (int32 y = 1; y < SizeY-1; y++)
+		for (int32 y = 1; y < SizeY - 1; y++)
 		{
 			if (!MazeArray[x][y])
 			{
@@ -87,16 +109,30 @@ void AMazeGenerator::GenerateMaze()
 	{
 		if (EmptyLocation.Num() > 0)
 		{
-			int32 Randomindex = FMath::RandRange(0, EmptyLocation.Num() - 1);
-			FVector SpawnLoction = EmptyLocation[Randomindex];
-
+			int32 RandomIndex = FMath::RandRange(0, EmptyLocation.Num() - 1);
+			FVector SpawnLoction = EmptyLocation[RandomIndex];
 
 			// 몬스터 스폰
-			SpawnManager(Monster, SpawnLoction);
+			SpawnedMonster = SpawnManager(Monster, SpawnLoction);
 
 			// 선택된 위치는 다시 사용하지 않도록 목록에서 제거
-			EmptyLocation.RemoveAt(Randomindex);
+			EmptyLocation.RemoveAt(RandomIndex);
 
+		}
+	}
+
+	for (int BulletSpawnCnt = 0; BulletSpawnCnt < 5; BulletSpawnCnt++)
+	{
+		if (EmptyLocation.Num() > 0)
+		{
+			int32 RandomIndex = FMath::RandRange(0, EmptyLocation.Num() - 1);
+			FVector BulletSpawnLocation = EmptyLocation[RandomIndex];
+
+			// 총알 스폰
+			SpawnedBullet = SpawnManager(Bullet, BulletSpawnLocation);
+
+			// 선택된 위치는 다시 사용하지 않도록 목록에서 제거
+			EmptyLocation.RemoveAt(RandomIndex);
 		}
 	}
 }
