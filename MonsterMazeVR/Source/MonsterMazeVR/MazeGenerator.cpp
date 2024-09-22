@@ -70,7 +70,7 @@ void AMazeGenerator::GenerateMaze()
 	SpawnedPlayerStart = SpawnManager(PlayerStart, PlayerStartLocation);
 	UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->SetActorLocation(FVector(distance * 1.5, distance * 1.5, 92.0f));
 	
-
+	
 	// ExitPortal ½ºÆù
 	SpawnedExitPortal = SpawnManager(ExitPortal, FVector((SizeX - 2) * distance + 175.0f, (SizeY - 2) * distance + 175.0f, 92.0f));
 
@@ -97,6 +97,7 @@ void AMazeGenerator::GenerateMaze()
 	else if (RightGridX > 0 && RightGridX < SizeX && RightGridY > 0 && RightGridY < SizeY && !MazeArray[RightGridX][RightGridY])
 	{
 		SpawnedPlayerGunWeapon = SpawnManager(PlayerGunWeapon, GunSpawnRightLocation);
+		UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->SetActorRotation(FRotator(0.0f, 90.0f, 0.0f));
 	}
 	else
 	{
