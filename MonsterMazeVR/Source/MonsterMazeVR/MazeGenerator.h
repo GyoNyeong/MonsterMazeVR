@@ -32,6 +32,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
 	TSubclassOf<AActor> Monster;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
+	TSubclassOf<AActor> PlayerGunWeapon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Maze Properites")
+	TSubclassOf<AActor> Bullet;
+
 	UFUNCTION(BlueprintCallable, Category = "MazeGen")
 	void GenerateMaze();
 
@@ -49,6 +55,8 @@ protected:
 	AActor* SpawnedPlayerStart;
 	AActor* SpawnedExitPortal;
 	AActor* SpawnedMonster;
+	AActor* SpawnedPlayerGunWeapon;
+	AActor* SpawnedBullet;
 	
 	// DFS 알고리즘을 사용하여 미로를 생성하는 함수
 	void CarveMazeDFS(int X, int Y);
