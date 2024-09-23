@@ -114,7 +114,7 @@ void AMazeGenerator::GenerateMaze()
 		{
 			if (!MazeArray[x][y])
 			{
-				EmptyLocation.Add(FVector(x * distance + 175.0f, y * distance + 175.0f, 92.0f));
+				EmptyLocation.Add(FVector(x * distance + 175.0f, y * distance + 175.0f, 130));
 			}
 		}
 	}

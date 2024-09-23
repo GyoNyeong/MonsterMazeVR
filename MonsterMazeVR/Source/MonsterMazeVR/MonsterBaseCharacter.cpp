@@ -17,12 +17,12 @@ void AMonsterBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AController* MonsterController = GetWorld()->SpawnActor<AController>(AIControllerClass, GetActorLocation(), GetActorRotation());
-	if (MonsterController == nullptr)
-	{
-		return;
-	}
-	PossessedBy(MonsterController);
+	//AController* MonsterController = GetWorld()->SpawnActor<AController>(AIControllerClass, GetActorLocation(), GetActorRotation());
+	//if (MonsterController == nullptr)
+	//{
+	//	return;
+	//}
+	//PossessedBy(MonsterController);
 }
 
 // Called every frame
