@@ -76,8 +76,8 @@ void AMazeGenerator::GenerateMaze()
 
 	// PlayerStart 근처의 통로를 확인한 후, PlayerGunWeapon 스폰
 	// PlayerWeapon을 스폰할 위치 결정
-	FVector PlayerForwardDirection = FVector(distance, 0.0f, 0.0f);
-	FVector PlayerRightDirection = FVector(0.0f, distance, 0.0f);
+	FVector PlayerForwardDirection = FVector(distance, 0.0f, 90.0f);
+	FVector PlayerRightDirection = FVector(0.0f, distance, 90.0f);
 
 	FVector GunSpawnForwardLocation = PlayerStartLocation + PlayerForwardDirection;
 	FVector GunSpawnRightLocation = PlayerStartLocation + PlayerRightDirection;
