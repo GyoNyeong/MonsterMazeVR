@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Math/UnrealMathUtility.h"
 #include "Kismet/GameplayStatics.h"
+#include "MonsterBaseCharacter.h"
 
 const int MazeSizeMax = 101;
 const float distance = 350.0f;
@@ -221,8 +222,19 @@ AActor* AMazeGenerator::SpawnManager(UClass* BlockType, const FVector Location, 
 		return nullptr;
 	}
 
+	//AMonsterBaseCharacter::StaticClass()->
+	//
+	//AController* MonsterController = GetWorld()->SpawnActor<AController>(AIControllerClass, GetActorLocation(), GetActorRotation());
+	//if (MonsterController == nullptr)
+	//{
+	//	return nullptr;
+	//}
+
+	//FActorSpawnParameters AAA;
+	//AAA.Owner = MonsterController;
+
 	// 월드에 새로운 오브젝트 생성
-	AActor* NewBlock = GetWorld()->SpawnActor<AActor>(BlockType, Location, Rotation);
+	AActor* NewBlock = GetWorld()->SpawnActor<AActor>(BlockType, Location, Rotation );
 	if (NewBlock == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to spawn actor at location: %s"), *Location.ToString());

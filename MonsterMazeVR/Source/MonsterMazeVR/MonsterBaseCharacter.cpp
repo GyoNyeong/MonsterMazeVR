@@ -20,12 +20,9 @@ void AMonsterBaseCharacter::BeginPlay()
 	AController* MonsterController = GetWorld()->SpawnActor<AController>(AIControllerClass, GetActorLocation(), GetActorRotation());
 	if (MonsterController == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to MonsterController"));
 		return;
 	}
-
 	PossessedBy(MonsterController);
-	
 }
 
 // Called every frame
