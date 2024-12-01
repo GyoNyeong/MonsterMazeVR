@@ -109,19 +109,3 @@ VR 콘텐츠 프로젝트: 몬스터를 피해 무한한 미로를 탈출하는 
 ---
 
 <br>
-
-## 📂 **주요 코드**
-### 랜덤 미로 생성
-```cpp
-void AMazeGenerator::CarveMazeDFS(int X, int Y)
-{
-    MazeArray[X][Y] = false; // 현재 위치를 통로로 설정
-    TArray<int32> Directions = { 0, 1, 2, 3 }; // 방향 설정 (북, 동, 남, 서)
-
-    for (int32 i = 0; i < 4; i++)
-    {
-        int RandomDirectionIndex = FMath::RandRange(0, Directions.Num() - 1);
-        int Direction = Directions[RandomDirectionIndex];
-        // (로직 생략)
-    }
-}
